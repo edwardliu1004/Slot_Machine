@@ -16,7 +16,7 @@ module slotModule(
 		feedback = shift_reg[3] ^ shift_reg[2];
 	end
 
-	always_ff @(posedge clk or posedge reset) begin
+	always_ff @(posedge clk) begin
 		if (reset) begin
 			shift_reg <= SEED;
 			number <= SEED;
