@@ -3,7 +3,7 @@ module slot_machine_fsm(
 	input rst,
 	input start_stop,
 	input win_flag,
-	output [1:0] state
+	output reg [1:0] state
 );
 
 	typedef enum logic [1:0] {
@@ -14,8 +14,8 @@ module slot_machine_fsm(
 	} fsm_state_t;
 	
 	localparam SEED = 2'b11; //Seed value for the shift register
-	logic [1:0] ss_shift_reg; //holds value for shift register
-	logic [1:0] rst_shift_reg;
+	logic [1:0] ss_shift_reg = SEED; //holds value for shift register
+	logic [1:0] rst_shift_reg = SEED;
 	logic ss_feedback;
 	logic rst_feedback;
 	
@@ -26,10 +26,14 @@ module slot_machine_fsm(
 		ss_shift_reg <= {ss_feedback, ss_shift_reg[1]};
 		rst_shift_reg <= {rst_feedback, rst_shift_reg[1]};
 		
-		if (rst_shift_reg == 2'b01)
+		if (rst_shift_reg == 2'b01) begin
 			current_state <= SET;
-		else 
+			state <= SET;
+		end
+		else begin
 			current_state <= next_state;
+			state <= next_state;
+		end
 	end
 	
 	always_comb begin 
@@ -39,20 +43,28 @@ module slot_machine_fsm(
 		
 		case (current_state)
 			SET: begin
-				if (ss_shift_reg == 2'b01)
+				if (ss_shift_reg == 2'b01) 
 					next_state = RUN;
+				else 
+					next_state = SET;
 			end
 			RUN: begin
 				if (ss_shift_reg == 2'b01)
 					next_state = STOP;
+				else 
+					next_state = RUN;
 			end
 			STOP: begin
 				if (win_flag)
 					next_state = WIN;
+				else 
+						next_state = STOP;
 			end
 			WIN: begin 
 				if (rst_shift_reg == 2'b01)
 					next_state = SET;
+				else 
+					next_state = WIN;
 			end
 			default: begin
 					next_state = SET;
@@ -61,7 +73,6 @@ module slot_machine_fsm(
 	end
 		
 endmodule
-
 
 
 

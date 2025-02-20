@@ -17,13 +17,13 @@ module slotModule(
 	end
 
 	always_ff @(posedge clk) begin
-		if (reset) begin
+		if (run) begin
+			shift_reg <= {feedback, shift_reg[3:1]};
+			number <= shift_reg;
+			//number <= 4'b0010;
+		end else if (reset) begin 
 			shift_reg <= SEED;
 			number <= SEED;
-		end else if (run) begin 
-			shift_reg <= {feedback, shift_reg[2:0]};
-			number <= shift_reg;
-			//number <= 4'b0100;
 		end
 	end
 

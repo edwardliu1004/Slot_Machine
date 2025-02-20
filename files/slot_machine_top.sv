@@ -10,12 +10,13 @@ module slot_machine_top (
     logic [1:0] state;         // Current FSM state
     logic win_flag;            // Indicates a winning condition
     logic [3:0] slot1, slot2, slot3; // Outputs from slot modules
+	 logic slow_clk_1, slow_clk_2, slow_clk_3;
 
-    clockDivider(clk, rst, 2, slow_clk_1);
-	 clockDivider(clk, rst, 3, slow_clk_2);
-	 clockDivider(clk, rst, 4, slow_clk_3);
+    clockDivider(clk, ~rst, 2, slow_clk_1);
+	 clockDivider(clk, ~rst, 3, slow_clk_2);
+	 clockDivider(clk, !rst, 4, slow_clk_3);
 	 
-	 slot_machine_fsm (slow_clk_1, rst, start_stop, win_flag, state);
+	 slot_machine_fsm (clk, rst, start_stop, win_flag, state);
 	 
 	 slotModule (slow_clk_1, state == 2'b00, state == 2'b01, slot1);
 	 slotModule (slow_clk_2, state == 2'b00, state == 2'b01, slot2);
@@ -31,13 +32,13 @@ module slot_machine_top (
 	 displayEncoder(slot2, digits_slot2[1:0]);
 	 displayEncoder(slot3, digits_slot3[1:0]);
 	 
-    sevenSegDigit(digits_slot1[1], outputBits[5]);
-	 sevenSegDigit(digits_slot1[0], outputBits[4]);
-	 sevenSegDigit(digits_slot2[1], outputBits[3]);
-	 sevenSegDigit(digits_slot2[0], outputBits[2]);
-	 sevenSegDigit(digits_slot3[1], outputBits[1]);
-	 sevenSegDigit(digits_slot3[0], outputBits[0]);
+    sevenSegDigit(digits_slot1[1], state == 2'b11, slow_clk_3, outputBits[5]);
+	 sevenSegDigit(digits_slot1[0], state == 2'b11, slow_clk_3, outputBits[4]);
+	 sevenSegDigit(digits_slot2[1], state == 2'b11, slow_clk_3, outputBits[3]);
+	 sevenSegDigit(digits_slot2[0], state == 2'b11, slow_clk_3, outputBits[2]);
+	 sevenSegDigit(digits_slot3[1], state == 2'b11, slow_clk_3, outputBits[1]);
+	 sevenSegDigit(digits_slot3[0], state == 2'b11, slow_clk_3, outputBits[0]);
 	 
-	 buzzer(slow_clk_1, state == 2'b11, buzzer);
+	 buzzer(clk, state == 2'b11, buzzer);
 
 endmodule
